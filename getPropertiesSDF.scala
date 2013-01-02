@@ -3,6 +3,7 @@ import scala.io._
 import scala.collection.mutable.ArrayBuffer
 import java.io.FileWriter
 
+
 object getPropertiesSDF{
   def main(args: Array[String]) {
     val usage = """
