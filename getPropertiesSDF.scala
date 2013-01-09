@@ -44,13 +44,17 @@ scala getPropertiesSDF.scala -isdf <inputSDF> -ocsv <OutputCSV>
         var map = scala.collection.mutable.Map[java.lang.String,java.lang.String]()
         var mapsBuffer = ArrayBuffer[Map[java.lang.String,java.lang.String]] ()
         var label = new String()
+        var molIndx = 0
         for( line <- io.Source.fromFile(ifileNameSdf).getLines()){
           if( line.startsWith("$$$$") ){
+            molIndx = molIndx + 1
             if(map.size > 0 ){
               mapsBuffer = mapsBuffer ++  ArrayBuffer( map.toMap )
-              map.clear  
+             
+            }else{
+               println( "Molecule Nr "+ molIndx + " is empty.") 
             }
-          
+            map.clear  
           }else{
             if( line.startsWith(">  <") ){
               label = line.split("[<>]")(2)
@@ -91,5 +95,4 @@ scala getPropertiesSDF.scala -isdf <inputSDF> -ocsv <OutputCSV>
       case e: Exception      => println( "Exception caught:\n" + e);
    }
   }
-
 }
