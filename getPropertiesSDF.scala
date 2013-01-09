@@ -3,15 +3,14 @@ import scala.io._
 import scala.collection.mutable.ArrayBuffer
 import java.io.FileWriter
 
-
 object getPropertiesSDF{
   def main(args: Array[String]) {
     val usage = """
 scala getPropertiesSDF.scala -isdf <inputSDF> -ocsv <OutputCSV>
                 """      
   /* Input parsing & processing */
+    println(usage)
     if (args.length == 0) { 
-      println(usage)
       sys.exit(1)
     }
     val arglist = args.toList
@@ -47,8 +46,11 @@ scala getPropertiesSDF.scala -isdf <inputSDF> -ocsv <OutputCSV>
         var label = new String()
         for( line <- io.Source.fromFile(ifileNameSdf).getLines()){
           if( line.startsWith("$$$$") ){
-            mapsBuffer = mapsBuffer ++  ArrayBuffer(map.toMap )
-            map.clear
+            if(map.size > 0 ){
+              mapsBuffer = mapsBuffer ++  ArrayBuffer( map.toMap )
+              map.clear  
+            }
+          
           }else{
             if( line.startsWith(">  <") ){
               label = line.split("[<>]")(2)
@@ -61,27 +63,32 @@ scala getPropertiesSDF.scala -isdf <inputSDF> -ocsv <OutputCSV>
           } 
         }
         
+       if( mapsBuffer.size == 0 ) { println("Nothing to add!") ; sys.exit(1)}
        var header = mapsBuffer.map( x => x.keys ).reduceLeft((x,y)=> x ++ y) 
        var line = "" 
+       var value = ""  
+       //println( header )
        for(col <- header){ line += col + "\t"  }
-       output.write(line + "\n")
+       output.write(line )
        for( map <- mapsBuffer ){
           line = ""
+
           for(col <- header){
              try{
-                line += map(col) + "\t" 
+                value = map(col)
               }catch{
-                  case e: java.util.NoSuchElementException => line += "" 
+                  case e: java.util.NoSuchElementException => value = "NA"
               }
+              line +=  value + "\t" 
            }
-           output.write(line + "\n")
+           output.write( "\n" + line)
         }
       }catch{
-        case e: java.lang.UnsupportedOperationException => println("Unsupported Operation: Check input files.")
-        case e: Exception                           => println("Exception caught:\n" + e);
+        case e: java.lang.UnsupportedOperationException => println("Unsupported Operation: Check input files." + e )
+        case e: Exception    => println("Exception caught:\n" + e);
       }finally{ output.close}
    }catch{
-      case e: Exception                           => println( "Exception caught:\n" + e);
+      case e: Exception      => println( "Exception caught:\n" + e);
    }
   }
 
